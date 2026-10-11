@@ -14,52 +14,76 @@
       padding: 0;
       width: 100%;
       min-height: 100%;
+      font-family: Arial, sans-serif;
       background: #f8f0f3;
       color: #67384d;
-      font-family: Arial, sans-serif;
     }
 
     body {
+      overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
 
     header {
-      padding: 14px 10px;
-      text-align: center;
-      font-weight: bold;
       position: sticky;
       top: 0;
-      z-index: 2;
+      z-index: 10;
+      padding: 14px 8px;
+      text-align: center;
+      font-weight: bold;
       background: #f8f0f3;
     }
 
     #status {
-      padding: 12px;
       text-align: center;
+      padding: 12px;
     }
 
     #pages {
       width: 100%;
-      padding: 0 6px 24px;
+      padding: 0 5px 24px;
     }
 
     .page {
-      display: block;
+      position: relative;
       width: 100%;
-      height: auto;
       margin: 0 auto 12px;
       background: white;
       box-shadow: 0 1px 5px #0002;
+    }
+
+    .page canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .links {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .links a {
+      position: absolute;
+      display: block;
+      background: transparent;
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(103, 56, 77, .15);
+    }
+
+    .links a:focus-visible {
+      outline: 2px solid #67384d;
     }
 
     .fallback {
       display: block;
       margin: 12px;
       padding: 14px;
-      color: #67384d;
-      background: white;
       border-radius: 10px;
+      background: white;
+      color: #67384d;
       text-align: center;
     }
   </style>
@@ -68,6 +92,7 @@
   <header>SHOKOLADKA ♡ Путеводитель</header>
   <div id="status">Загружаем путеводитель…</div>
   <main id="pages"></main>
+
   <a class="fallback" href="./guide.pdf" target="_blank" rel="noopener">
     Открыть оригинальный PDF отдельно
   </a>
@@ -80,43 +105,95 @@
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
 
     const status = document.getElementById('status');
-    const pages = document.getElementById('pages');
+    const pagesContainer = document.getElementById('pages');
 
     async function showPDF() {
       try {
         const pdf = await pdfjsLib.getDocument('./guide.pdf').promise;
-        status.textContent = `Страниц: ${pdf.numPages}`;
+        status.textContent = `Загружаем ${pdf.numPages} страниц…`;
 
         for (let number = 1; number <= pdf.numPages; number++) {
           const page = await pdf.getPage(number);
-          const base = page.getViewport({ scale: 1 });
-          const scale = Math.min(
-            (window.innerWidth - 12) / base.width,
-            1.8
-          );
+
+          const originalViewport = page.getViewport({ scale: 1 });
+          const scale = (window.innerWidth - 10) / originalViewport.width;
           const viewport = page.getViewport({ scale });
+
+          const wrapper = document.createElement('section');
+          wrapper.className = 'page';
+          wrapper.style.aspectRatio =
+            `${viewport.width} / ${viewport.height}`;
+
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
+          const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 
-          canvas.width = Math.floor(viewport.width);
-          canvas.height = Math.floor(viewport.height);
-          canvas.className = 'page';
+          canvas.width = Math.floor(viewport.width * pixelRatio);
+          canvas.height = Math.floor(viewport.height * pixelRatio);
           canvas.style.width = '100%';
           canvas.style.height = 'auto';
 
-          pages.appendChild(canvas);
+          wrapper.style.width = '100%';
+          wrapper.style.aspectRatio =
+            `${viewport.width} / ${viewport.height}`;
+
+          wrapper.appendChild(canvas);
+
+          const linkLayer = document.createElement('div');
+          linkLayer.className = 'links';
+          wrapper.appendChild(linkLayer);
+          pagesContainer.appendChild(wrapper);
 
           await page.render({
             canvasContext: context,
-            viewport
+            viewport,
+            transform: pixelRatio === 1
+              ? null
+              : [pixelRatio, 0, 0, pixelRatio, 0, 0]
           }).promise;
+
+          const annotations = await page.getAnnotations();
+
+          for (const annotation of annotations) {
+            if (annotation.subtype !== 'Link') continue;
+
+            let url = annotation.url;
+
+            if (!url && annotation.unsafeUrl) {
+              url = annotation.unsafeUrl;
+            }
+
+            if (!url) continue;
+
+            const rect = viewport.convertToViewportRectangle(
+              annotation.rect
+            );
+
+            const left = Math.min(rect[0], rect[2]);
+            const top = Math.min(rect[1], rect[3]);
+            const width = Math.abs(rect[2] - rect[0]);
+            const height = Math.abs(rect[3] - rect[1]);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.setAttribute('aria-label', 'Открыть ссылку');
+
+            link.style.left = `${left / viewport.width * 100}%`;
+            link.style.top = `${top / viewport.height * 100}%`;
+            link.style.width = `${width / viewport.width * 100}%`;
+            link.style.height = `${height / viewport.height * 100}%`;
+
+            linkLayer.appendChild(link);
+          }
         }
 
         status.textContent = 'Путеводитель SHOKOLADKA';
       } catch (error) {
         console.error(error);
         status.textContent =
-          'Не удалось отобразить страницы. Используйте ссылку на оригинальный PDF ниже.';
+          'Не удалось загрузить путеводитель. Откройте оригинальный PDF по ссылке ниже.';
       }
     }
 
