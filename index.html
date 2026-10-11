@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHOKOLADKA — Памятка</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f8f0e9;color:#4b352e;font-family:Arial,sans-serif}
+header{background:#ead3c3;text-align:center;padding:28px 18px;border-radius:0 0 28px 28px}
+h1{margin:0;font-size:27px;letter-spacing:3px}
+header p{margin:9px 0 0;font-size:14px}
+main{max-width:600px;margin:auto;padding:20px 16px}
+.intro{line-height:1.6;font-size:15px;margin-bottom:18px}
+.item{width:100%;border:0;border-radius:16px;background:#fffaf6;margin:9px 0;padding:17px;text-align:left;color:#4b352e;font-size:16px;box-shadow:0 2px 8px #6d493410;cursor:pointer}
+.item span{float:right;color:#a77960}
+.content{display:none;background:#fffaf6;border-radius:16px;padding:18px;margin:5px 0 14px;line-height:1.7;font-size:14px}
+.content h3{margin-top:0}
+footer{text-align:center;color:#977b6b;font-size:12px;padding:20px}
+</style>
+</head>
+<body>
+<header>
+<h1>SHOKOLADKA</h1>
+<p>Памятка для наших гостей ♡</p>
+</header>
+<main>
+<p class="intro">Мы подготовили для вас небольшую памятку. Выберите интересующий раздел, чтобы узнать больше.</p>
+
+<button class="item" onclick="toggle('a')">♡ Подготовка к процедуре <span>＋</span></button>
+<div class="content" id="a">
+<h3>Подготовка</h3>
+Перед посещением ознакомьтесь с рекомендациями специалиста. Если у вас есть вопросы, сомнения или противопоказания, обязательно обсудите их с мастером заранее.
+</div>
+
+<button class="item" onclick="toggle('b')">♡ Как проходит процедура <span>＋</span></button>
+<div class="content" id="b">
+<h3>Процедура</h3>
+Специалист расскажет об этапах процедуры и ответит на ваши вопросы. Не стесняйтесь сообщать о дискомфорте или просить дополнительные разъяснения.
+</div>
+
+<button class="item" onclick="toggle('c')">♡ Уход после процедуры <span>＋</span></button>
+<div class="content" id="c">
+<h3>После процедуры</h3>
+Соблюдайте индивидуальные рекомендации мастера. Правила ухода зависят от выбранной услуги, поэтому уточняйте их непосредственно у специалиста.
+</div>
+
+<button class="item" onclick="toggle('d')">♡ Частые вопросы <span>＋</span></button>
+<div class="content" id="d">
+<h3>Частые вопросы</h3>
+<strong>Можно ли задать вопрос заранее?</strong><br>Конечно! Уточните детали у администратора перед записью.<br><br>
+<strong>Что делать, если нужно перенести визит?</strong><br>Свяжитесь с администратором и согласуйте новое время.
+</div>
+
+<button class="item" onclick="toggle('e')">♡ Важная информация <span>＋</span></button>
+<div class="content" id="e">
+<h3>Важно</h3>
+Информация в этой памятке носит общий характер и не заменяет персональных рекомендаций специалиста. При наличии противопоказаний обязательно проконсультируйтесь с профессионалом.
+</div>
+</main>
+<footer>С заботой о вас · SHOKOLADKA ♡</footer>
+<script>
+function toggle(id){
+const el=document.getElementById(id);
+el.style.display=el.style.display==='block'?'none':'block';
+}
+</script>
+</body>
+</html>
